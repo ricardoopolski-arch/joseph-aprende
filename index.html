@@ -21,7 +21,9 @@
     touch-action:manipulation; overscroll-behavior:none;
     position:fixed; top:0; left:0;  /* trava: sem puxar pra atualizar, sem bounce */
   }
-  body{ display:flex; flex-direction:column; }
+  /* no computador (tela larga) centraliza igual um celular, em vez de esticar */
+  body{ display:flex; flex-direction:column; max-width:480px; left:0; right:0; margin:0 auto;
+    box-shadow:0 0 60px rgba(0,0,0,.5); }
 
   /* fundo com bolhas flutuando */
   #bolhas{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
@@ -300,7 +302,7 @@ function falar(t){
    Cai de volta pro emoji do aparelho se nao houver internet (offline). */
 function twCode(s){ var r=[],c=0,p=0,i=0; while(i<s.length){ c=s.charCodeAt(i++); if(p){ r.push((0x10000+((p-0xD800)<<10)+(c-0xDC00)).toString(16)); p=0; } else if(0xD800<=c&&c<=0xDBFF){ p=c; } else r.push(c.toString(16)); } return r.join('-'); }
 function twKey(e){ return e.indexOf('‍')<0 ? twCode(e.replace(/️/g,'')) : twCode(e); }
-function EM(e){ return '<img class="tw" alt="'+e+'" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/72x72/'+twKey(e)+'.png" onerror="twFail(this)">'; }
+function EM(e){ return '<img class="tw" alt="'+e+'" src="twemoji/'+twKey(e)+'.png" onerror="twFail(this)">'; }
 window.twFail=function(img){ var sp=document.createElement('span'); sp.textContent=img.getAttribute('alt'); if(img.parentNode) img.parentNode.replaceChild(sp,img); };
 
 /* ---------- confete ---------- */
