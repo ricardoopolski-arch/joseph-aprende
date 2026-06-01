@@ -288,7 +288,8 @@ function pickVoice(){
          || pt[0] || null;
 }
 if(window.speechSynthesis){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
-function falar(t){
+/* voz do aparelho (reserva, caso o audio gravado nao toque) */
+function ttsFala(t){
   if(!window.speechSynthesis) return;
   try{ speechSynthesis.cancel();
     if(!ptVoice) pickVoice();
@@ -296,6 +297,30 @@ function falar(t){
     var u=new SpeechSynthesisUtterance(dito); u.lang='pt-BR'; if(ptVoice)u.voice=ptVoice;
     u.rate=.95; u.pitch=1.0; speechSynthesis.speak(u);
   }catch(e){}
+}
+
+/* chave do arquivo de audio a partir do texto (igual no gerador) */
+function slug(t){
+  return t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+}
+
+/* fala: toca o audio gravado (voz Maria, igual em todo aparelho);
+   se faltar o arquivo, usa a voz do proprio aparelho como reserva. */
+var _curAudio=null;
+function falar(t){
+  if(window.speechSynthesis) speechSynthesis.cancel();
+  if(_curAudio){ try{ _curAudio.pause(); }catch(e){} _curAudio=null; }
+  var k=slug(t);
+  if(!k){ ttsFala(t); return; }
+  var usouReserva=false;
+  function reserva(){ if(usouReserva)return; usouReserva=true; ttsFala(t); }
+  try{
+    var a=new Audio('audio/'+k+'.mp3'); _curAudio=a;
+    a.addEventListener('error', reserva);
+    var pr=a.play();
+    if(pr&&pr.catch) pr.catch(reserva);
+  }catch(e){ reserva(); }
 }
 
 /* ---------- emoji em imagem (Twemoji) p/ renderizar igual em todo celular ----------
