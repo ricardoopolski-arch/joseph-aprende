@@ -270,18 +270,29 @@ function somErro(){ nota(220,0,.18,.18,'sawtooth'); nota(180,0.12,.2,.16,'sawtoo
 function somConta(i){ nota(440+ i*70,0,.14,.18,'sine'); }
 function somFesta(){ [659,784,988,1318].forEach(function(f,i){ nota(f,i*0.07,.3,.18,'triangle'); }); }
 
-/* ---------- voz (pt-BR) ---------- */
+/* ---------- voz (pt-BR) ----------
+   Se a voz falar o nome "Joseph" torto no celular, troque NOME_FALADO
+   por como deve SOAR (ex.: "Josef", "Jozéfi", "Jô"). O que aparece
+   escrito na tela continua "Joseph". */
+var NOME_FALADO = 'Joseph';
 var ptVoice=null;
 function pickVoice(){
   var vs = window.speechSynthesis ? speechSynthesis.getVoices() : [];
-  ptVoice = vs.find(function(v){return /pt[-_]BR/i.test(v.lang);}) || vs.find(function(v){return /^pt/i.test(v.lang);}) || null;
+  var pt = vs.filter(function(v){return /pt[-_]BR/i.test(v.lang);});
+  if(!pt.length) pt = vs.filter(function(v){return /^pt/i.test(v.lang);});
+  ptVoice = pt.find(function(v){return /google/i.test(v.name);})
+         || pt.find(function(v){return /(luciana|francisca|maria|f[eê]minin|microsoft)/i.test(v.name);})
+         || pt.find(function(v){return v.localService;})
+         || pt[0] || null;
 }
 if(window.speechSynthesis){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
 function falar(t){
   if(!window.speechSynthesis) return;
   try{ speechSynthesis.cancel();
-    var u=new SpeechSynthesisUtterance(t); u.lang='pt-BR'; if(ptVoice)u.voice=ptVoice;
-    u.rate=.92; u.pitch=1.15; speechSynthesis.speak(u);
+    if(!ptVoice) pickVoice();
+    var dito = t.replace(/Joseph/g, NOME_FALADO);
+    var u=new SpeechSynthesisUtterance(dito); u.lang='pt-BR'; if(ptVoice)u.voice=ptVoice;
+    u.rate=.95; u.pitch=1.0; speechSynthesis.speak(u);
   }catch(e){}
 }
 
